@@ -1,0 +1,5 @@
+ipykernel
+playwright
+#playwright install chromium
+langchain-openai
+fastapi[all]
