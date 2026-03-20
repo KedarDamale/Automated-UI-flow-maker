@@ -1,20 +1,3 @@
-#!/usr/bin/env python3
-"""
-CLI entry point.
-
-Basic usage (public site):
-    python run.py --url https://example.com --depth 3
-
-With login:
-    python run.py --url https://app.example.com \
-        --login-url https://app.example.com/login \
-        --login-steps login_steps.json \
-        --depth 4
-
-With LLM enrichment:
-    python run.py --url https://example.com \
-        --enrich --tasks "change password,find invoice,update profile"
-"""
 
 import argparse
 import asyncio
@@ -25,13 +8,6 @@ import sys
 
 from crawler import CrawlerConfig, UICrawler, enrich_graph
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(levelname)s  %(message)s",
-    datefmt="%H:%M:%S",
-)
-
-
 def parse_args():
     p = argparse.ArgumentParser(description="UI Flow Crawler")
     p.add_argument("--url", required=True, help="Start URL")
@@ -41,6 +17,8 @@ def parse_args():
     p.add_argument("--screenshots", default=None, help="Dir to save screenshots")
     p.add_argument("--no-headless", action="store_true", help="Show browser window")
     p.add_argument("--stay-on-origin", action="store_true", default=True)
+
+
 
     # login
     p.add_argument("--login-url", default=None)

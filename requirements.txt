@@ -4,3 +4,4 @@ playwright
 langchain-openai
 fastapi[all]
 python-dotenv
+openai
