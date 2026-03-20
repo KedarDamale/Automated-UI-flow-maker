@@ -3,3 +3,4 @@ playwright
 #playwright install chromium
 langchain-openai
 fastapi[all]
+python-dotenv
