@@ -5,3 +5,5 @@ langchain-openai
 fastapi[all]
 python-dotenv
 openai
+asyncio
+pyvis

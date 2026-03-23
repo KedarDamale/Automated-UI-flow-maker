@@ -1,14 +1,18 @@
+#controls how the graph will
+from src.config.Logger import logger
 class GraphBuilder:
+
     def __init__(self):
-        self._nodes: dict[str, dict] = {}           # node_id -> node dict
-        self._adjacency: dict[str, list[dict]] = {} # node_id -> [edge, …]
-        self._fp_to_id: dict[str, str] = {}         # fingerprint -> node_id
+        self._nodes: dict[str, dict] = {}           
+        self._adjacency: dict[str, list[dict]] = {} 
+        self._fp_to_id: dict[str, str] = {}        
         self._start: str | None = None
 
-    # ── mutation ─────────────────────────────
 
     def set_start(self, node_id: str):
         self._start = node_id
+        logger.log(f"Setting start node to {node_id}","info")
+
 
     def add_node(self, state: "CrawlState", fingerprint: str):
         # Infer a human-readable name from the page title
@@ -21,7 +25,7 @@ class GraphBuilder:
             "url": state.url,
             "tags": _infer_tags(state.url, state.title),
             "screenshot": state.screenshot_path,
-            # placeholder for LLM-computed heuristics (see llm_enricher.py)
+            # placeholder for LLM-computed heuristics 
             "heuristics": {},
         }
         self._adjacency.setdefault(state.node_id, [])

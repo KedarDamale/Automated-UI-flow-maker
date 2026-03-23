@@ -1,0 +1,145 @@
+{
+  "start_node": "root_1",
+  "nodes": {
+    "root_1": {
+      "type": "screen",
+      "name": "PATGPT",
+      "url": "https://patgpt.globalspace.in/",
+      "tags": [],
+      "screenshot": "output/screenshots/root_1.png",
+      "heuristics": {}
+    },
+    "root_2": {
+      "type": "screen",
+      "name": "PATGPT",
+      "url": "https://patgpt.globalspace.in/",
+      "tags": [],
+      "screenshot": "output/screenshots/root_2.png",
+      "heuristics": {}
+    },
+    "root_3": {
+      "type": "screen",
+      "name": "PATGPT",
+      "url": "https://patgpt.globalspace.in/",
+      "tags": [],
+      "screenshot": "output/screenshots/root_3.png",
+      "heuristics": {}
+    },
+    "root_4": {
+      "type": "screen",
+      "name": "PATGPT",
+      "url": "https://patgpt.globalspace.in/",
+      "tags": [],
+      "screenshot": "output/screenshots/root_4.png",
+      "heuristics": {}
+    },
+    "root_5": {
+      "type": "screen",
+      "name": "PATGPT",
+      "url": "https://patgpt.globalspace.in/#contact",
+      "tags": [],
+      "screenshot": "output/screenshots/root_5.png",
+      "heuristics": {}
+    },
+    "root_6": {
+      "type": "screen",
+      "name": "PATGPT",
+      "url": "https://patgpt.globalspace.in/#product",
+      "tags": [],
+      "screenshot": "output/screenshots/root_6.png",
+      "heuristics": {}
+    },
+    "root_7": {
+      "type": "screen",
+      "name": "PATGPT",
+      "url": "https://patgpt.globalspace.in/#usecases",
+      "tags": [],
+      "screenshot": "output/screenshots/root_7.png",
+      "heuristics": {}
+    }
+  },
+  "adjacency_list": {
+    "root_1": [
+      {
+        "to": "root_2",
+        "weight": 1,
+        "action": {
+          "label": "Product",
+          "selector": "#radix-\u00abr0\u00bb-trigger-radix-\u00abr1\u00bb",
+          "tag": "button",
+          "href": null
+        }
+      },
+      {
+        "to": "root_3",
+        "weight": 1,
+        "action": {
+          "label": "Use Cases",
+          "selector": "#radix-\u00abr0\u00bb-trigger-radix-\u00abr2\u00bb",
+          "tag": "button",
+          "href": null
+        }
+      },
+      {
+        "to": "root_2",
+        "weight": 1,
+        "action": {
+          "label": "Security",
+          "selector": "#radix-\u00abr0\u00bb-trigger-radix-\u00abr3\u00bb",
+          "tag": "button",
+          "href": null
+        }
+      },
+      {
+        "to": "root_4",
+        "weight": 1,
+        "action": {
+          "label": "Download",
+          "selector": "#radix-\u00abr0\u00bb-trigger-radix-\u00abr4\u00bb",
+          "tag": "button",
+          "href": null
+        }
+      },
+      {
+        "to": "root_5",
+        "weight": 1,
+        "action": {
+          "label": "Contact Us",
+          "selector": "div:nth-of-type(1) > ul > li:nth-of-type(5) > a",
+          "tag": "a",
+          "href": "#contact"
+        }
+      },
+      {
+        "to": "root_6",
+        "weight": 1,
+        "action": {
+          "label": "Product",
+          "selector": "div > ul > li:nth-of-type(1) > a",
+          "tag": "a",
+          "href": "#product"
+        }
+      },
+      {
+        "to": "root_7",
+        "weight": 1,
+        "action": {
+          "label": "Use Cases",
+          "selector": "div > ul > li:nth-of-type(2) > a",
+          "tag": "a",
+          "href": "#usecases"
+        }
+      }
+    ],
+    "root_2": [],
+    "root_3": [],
+    "root_4": [],
+    "root_5": [],
+    "root_6": [],
+    "root_7": []
+  },
+  "meta": {
+    "total_nodes": 7,
+    "total_edges": 7
+  }
+}

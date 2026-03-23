@@ -33,13 +33,13 @@ async def extract_actions(page: "Page", cfg: "CrawlerConfig") -> list[ActionItem
         selector = r["selector"]
 
         # skip unwanted selectors
-        if _should_skip(selector, label, cfg):
+        if should_skip(selector, label):
             continue
 
         # filter by url allowlist if configured
         href = r.get("href", "")
-        if cfg.url_allowlist_patterns and href:
-            if not any(re.search(p, href) for p in cfg.url_allowlist_patterns):
+        if settings.URL_ALLOWLIST_PATTERNS and href:
+            if not any(re.search(p, href) for p in settings.URL_ALLOWLIST_PATTERNS):
                 continue
 
         weight = 2 if r["likelyNavigates"] else 1

@@ -1,7 +1,10 @@
-from pydantic import BaseModel
-from .settings import settings
+from pydantic import Field
+from pydantic_settings import BaseSettings
+from typing import Set
 
-class Config(BaseModel):
+
+
+class Config(BaseSettings):
 
     #llm config
     AZURE_OPENAI_API_KEY: str
@@ -22,29 +25,99 @@ class Config(BaseModel):
                         Use only tasks provided in the prompt.
                         Respond with ONLY valid JSON, no prose."""
 
+    EXTRACT_JS:str="""() => {
+    const SKIP_TAGS = new Set(['SCRIPT','STYLE','NOSCRIPT','SVG','HEAD']);
+
+    function getLabel(el) {
+        return (
+            el.getAttribute('aria-label') ||
+            el.getAttribute('title') ||
+            el.getAttribute('placeholder') ||
+            el.innerText?.trim().slice(0,80) ||
+            el.getAttribute('name') ||
+            el.getAttribute('id') ||
+            el.tagName.toLowerCase()
+        );
+    }
+
+    function uniqueSelector(el) {
+        if (el.id) return '#' + CSS.escape(el.id);
+        let path = [];
+        let cur = el;
+        for (let i = 0; i < 4 && cur && cur !== document.body; i++) {
+            let seg = cur.tagName.toLowerCase();
+            if (cur.id) { seg = '#' + CSS.escape(cur.id); path.unshift(seg); break; }
+            const siblings = Array.from(cur.parentElement?.children || [])
+                .filter(c => c.tagName === cur.tagName);
+            if (siblings.length > 1) {
+                seg += ':nth-of-type(' + (siblings.indexOf(cur) + 1) + ')';
+            }
+            path.unshift(seg);
+            cur = cur.parentElement;
+        }
+        return path.join(' > ');
+    }
+
+    function isVisible(el) {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 &&
+               window.getComputedStyle(el).visibility !== 'hidden' &&
+               window.getComputedStyle(el).display !== 'none';
+    }
+
+    const results = [];
+    const seen = new Set();
+
+    const candidates = document.querySelectorAll(
+        'a[href], button, input:not([type=hidden]), select, textarea, ' +
+        '[role="button"], [role="link"], [role="menuitem"], [role="tab"], ' +
+        '[role="checkbox"], [role="radio"], [onclick]'
+    );
+
+    for (const el of candidates) {
+        if (SKIP_TAGS.has(el.tagName)) continue;
+        if (!isVisible(el)) continue;
+        const sel = uniqueSelector(el);
+        if (seen.has(sel)) continue;
+        seen.add(sel);
+
+        const tag = el.tagName.toLowerCase();
+        const role = el.getAttribute('role') || '';
+        const href = el.getAttribute('href') || '';
+        const inputType = el.getAttribute('type') || '';
+        const label = getLabel(el);
+        const likelyNavigates = tag === 'a' && href && !href.startsWith('#') &&
+                                 !href.startsWith('javascript');
+
+        results.push({ label, selector: sel, tag, role, href, inputType, likelyNavigates });
+    }
+    return results;
+}"""
     #crawl config
-    CRAWL_URL: str="https://playwright.dev"
-    MAX_DEPTH: int=99999
-    MAX_NODES: int=99999
+    CRAWL_URL: str="https://patgpt.globalspace.in/"
+    MAX_DEPTH: int=1
+    MAX_NODES: int=1
     STAY_ON_ORIGIN: bool = True
 
+    DUMMY_TEXT:str="kedardamale@gmail.com"
+    DUMMY_PASSWORD:str="kedar152004"
     #browser config
     BROWSER_HEADLESS:bool=True
-    BROWSER_VIEWPORT:dict | None = field(default_factory=lambda: {"width": 1280, "height": 800})
-    BROWSER_EXTRA_HEADERS:dict = field(default_factory=dict)
+    BROWSER_VIEWPORT:dict | None = Field(default_factory=lambda: {"width": 1280, "height": 800})
+    BROWSER_EXTRA_HEADERS:dict = Field(default_factory=dict)
 
     #cookie config
-    COOKIES:list[dict] = field(default_factory=list)
+    COOKIES:list[dict] = Field(default_factory=list)
 
     #login details
     LOGIN_URL:str | None = None
         # list of {"selector": "...", "action": "fill|click", "value": "..."}
-    LOGIN_STEPS: list[dict] = field(default_factory=list)
+    LOGIN_STEPS: list[dict] = Field(default_factory=list)
     LOGIN_USERNAME:str | None = None
     LOGIN_PASSWORD:str | None = None
 
     #action filtering
-    SKIP_SELECTORS: list[str] = field(default_factory=lambda: [
+    SKIP_SELECTORS: list[str] = Field(default_factory=lambda: [
         "[data-testid='logout']",
         "[href*='logout']",
         "[href*='signout']",
@@ -52,8 +125,8 @@ class Config(BaseModel):
         "[href*='remove']",
     ])
     # Only follow links matching these URL patterns (None = all)
-    URL_ALLOWLIST_PATTERNS: list[str] = field(default_factory=list)
-    NOISE_PARAMS:Set[str] = field(default_factory=lambda: {"utm_source", "utm_medium", "utm_campaign", "ref", "fbclid", "_ga"})
+    URL_ALLOWLIST_PATTERNS: list[str] = Field(default_factory=list)
+    NOISE_PARAMS:Set[str] = Field(default_factory=lambda: {"utm_source", "utm_medium", "utm_campaign", "ref", "fbclid", "_ga"})
     FINGERPRINT_JS:str="""() => {
                         // Collect signals that indicate a distinct UI state
                         const url = location.href;
@@ -90,6 +163,11 @@ class Config(BaseModel):
     OUTPUT_PATH: str | None = r"output/ui_flow.json"
     SCREENSHOT_DIR_PATH: str | None = r"output/screenshots"
     PRETTY_PRINT: bool = True
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
 
 
 settings=Config()

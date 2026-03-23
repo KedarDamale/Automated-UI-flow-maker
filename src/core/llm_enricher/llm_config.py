@@ -4,12 +4,16 @@ from src.config.Config import settings
 from src.config.Logger import logger
 
 llm = AzureOpenAI(
-  azure_endpoint = f"https://{settings.AZURE_OPENAI_ENDPOINT}/openai/deployments/{settings.AZURE_DEPLOYMENT_NAME}",
-  api_key=settings.AZURE_OPENAI_API_KEY,
-  api_version=settings.AZURE_OPENAI_API_VERSION
+    azure_endpoint=f"https://{settings.AZURE_OPENAI_ENDPOINT}",
+    api_key=settings.AZURE_OPENAI_API_KEY,
+    api_version=settings.AZURE_OPENAI_API_VERSION,
 )
 
 def batch_nodes(nodes: dict) -> list[list]:
+    """
+    Instead of enriching every node with one call batch things logether and enrich instead
+    Batch nodes to fit within the LLM's context window.
+    """
     batches, current, count = [], [], 0
     for node_id, node in nodes.items():
         chunk = f"{node_id}: {json.dumps(node)}\n"
@@ -30,15 +34,17 @@ def enrich_graph(graph: dict, heuristic_tasks: list[str] | None = None) -> dict:
         return graph
 
     tasks = heuristic_tasks or []
+    
     if tasks:
         logger.log(f"Heuristic tasks: {tasks}", "info")
     else:
         logger.log("No heuristic tasks provided, using default tasks", "warn")
 
     nodes = graph.get("nodes", {})
+    logger.log(f"Nodes: {nodes}", "info")
     batches = batch_nodes(nodes)
-
     logger.log(f"Enriching {len(nodes)} nodes in {len(batches)} LLM call(s)", "info")
+
 
     for i, batch in enumerate(batches):
         nodes_block = "\n".join(

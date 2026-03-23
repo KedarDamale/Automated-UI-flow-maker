@@ -1,8 +1,8 @@
 # Page state fingerprinting — produces a stable hash that changes when the
 # user would perceive a meaningful state transition, even in SPAs where the
 # URL might stay the same.
-from config.Crawler import NOISE_PARAMS,FINGERPRINT_JS
-from config.logger import logger
+from src.config.Config import settings
+from src.config.Logger import logger
 from urllib.parse import urlparse, parse_qs, urlencode
 import json
 import hashlib
@@ -12,7 +12,7 @@ async def fingerprint_page(page:Page)->str:
     #returns hash representing the current UI state
 
     try:
-        signals: dict = await page.evaluate(FINGERPRINT_JS)
+        signals: dict = await page.evaluate(settings.FINGERPRINT_JS)
         logger.log(f"Signals detected: \n{signals}","info")
     except Exception:
         signals = {"url": page.url, "title": await page.title()}
@@ -24,7 +24,7 @@ async def fingerprint_page(page:Page)->str:
     logger.log(f"Parsed URL: {parsed}","info")
     qs = parse_qs(parsed.query)
     logger.log(f"Query String: {qs}","info")
-    clean_qs = {k: v for k, v in qs.items() if k not in NOISE_PARAMS}
+    clean_qs = {k: v for k, v in qs.items() if k not in settings.NOISE_PARAMS}
     logger.log(f"Clean Query String: {clean_qs}","info")
     clean_url = parsed._replace(query=urlencode(clean_qs, doseq=True)).geturl()
     logger.log(f"Clean URL: {clean_url}","info")
