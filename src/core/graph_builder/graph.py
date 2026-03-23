@@ -1,16 +1,3 @@
-"""
-Graph builder — accumulates nodes and edges as the crawler discovers them,
-then serialises to the target JSON schema.
-"""
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .crawler import CrawlState
-    from .extractor import ActionItem
-
-
 class GraphBuilder:
     def __init__(self):
         self._nodes: dict[str, dict] = {}           # node_id -> node dict

@@ -10,6 +10,7 @@ class Config(BaseModel):
     AZURE_DEPLOYMENT_NAME: str
     LLM_ENRICH:bool=True
     CHAR_LIMIT:int=100_000 * 4 # 400k tokens
+    
     SYSTEM_PROMPT:str="""
                         You are a UX analyst. Given a JSON description of a UI screen,
                         return a JSON object with:
@@ -91,4 +92,5 @@ class Config(BaseModel):
     PRETTY_PRINT: bool = True
 
 
+settings=Config()
 

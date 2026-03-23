@@ -21,7 +21,7 @@ def batch_nodes(nodes: dict) -> list[list]:
     if current:
         batches.append(current)
     return batches
-
+ 
 
 def enrich_graph(graph: dict, heuristic_tasks: list[str] | None = None) -> dict:
 

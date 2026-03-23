@@ -1,58 +1,21 @@
-"""
-UI Flow Crawler — discovers screen-to-screen transitions by
-driving a headless browser and recording what each interactive
-element does.
-"""
+from pydantic import BaseModel
+from src.config.Config import logger
 
-from __future__ import annotations
-
-import asyncio
-import hashlib
-import json
-import logging
-import re
-import time
-from collections import deque
-from dataclasses import dataclass, field
-from typing import Any
-from urllib.parse import urlparse
-
-from playwright.async_api import async_playwright, Browser, Page, Playwright
-
-from .config import CrawlerConfig
-from .extractor import extract_actions, ActionItem
-from .graph import GraphBuilder
-from .state import fingerprint_page
-
-log = logging.getLogger(__name__)
-
-
-# ─────────────────────────────────────────────
-# Data types
-# ─────────────────────────────────────────────
-
-@dataclass
-class CrawlState:
-    """A single discovered UI state (screen / modal)."""
+class CrawlState(BaseModel):
     node_id: str
     url: str
     title: str
     dom_hash: str
     screenshot_path: str | None = None
     meta: dict = field(default_factory=dict)
-
-
-@dataclass
-class QueueItem:
-    """An action waiting to be explored."""
+    
+class QueueItem(BaseModel):
     source_node_id: str
     action: ActionItem
     depth: int
 
 
-# ─────────────────────────────────────────────
-# Crawler
-# ─────────────────────────────────────────────
+
 
 class UICrawler:
     def __init__(self, config: CrawlerConfig):
@@ -98,17 +61,16 @@ class UICrawler:
             if item.depth > self.cfg.max_depth:
                 continue
 
-            log.info("  → exploring '%s' from node '%s'",
-                     item.action.label, item.source_node_id)
+            logger.log(f"  → exploring '{item.action.label}' from node '{item.source_node_id}'","info")
 
             # Navigate back to the source node's URL first, then re-reach state
-            source_url = self.graph.get_node(item.source_node_id)["url"]
+            source_url  = self.graph.get_node(item.source_node_id)["url"]
             try:
                 await page.goto(source_url, wait_until="networkidle", timeout=20_000)
                 # re-apply auth state if needed (cookies are persistent in context)
                 await asyncio.sleep(0.3)
             except Exception as e:
-                log.warning("Could not return to source url %s: %s", source_url, e)
+                logger.log(f"Could not return to source url {source_url}: {e}","warning")
                 continue
 
             # capture before-state
@@ -118,7 +80,7 @@ class UICrawler:
             try:
                 await self._execute_action(page, item.action)
             except Exception as e:
-                log.warning("Action failed (%s): %s", item.action.label, e)
+                logger.log(f"Action failed ({item.action.label}): {e}","warning")
                 continue
 
             await asyncio.sleep(0.5)
@@ -127,13 +89,13 @@ class UICrawler:
             after_fp = await fingerprint_page(page)
 
             if after_fp == before_fp:
-                log.debug("   no state change")
+                logger.log("   no state change","debug")
                 continue
 
             # check domain (don't leave the site)
             current_url = page.url
             if not self._same_origin(current_url):
-                log.debug("   left origin → skip")
+                logger.log("   left origin → skip","debug")
                 continue
 
             # register new (or existing) node
@@ -191,7 +153,7 @@ class UICrawler:
         if parent_id and action:
             self.graph.add_edge(parent_id, node_id, action)
 
-        log.info("  ✦ new node '%s'  (%s)", node_id, page.url)
+        logger.log(f"  ✦ new node '{node_id}'  ({page.url})","info")
 
         # enqueue actions from this state
         if depth < self.cfg.max_depth:
@@ -259,7 +221,7 @@ class UICrawler:
             await page.context.add_cookies(self.cfg.cookies)
 
     async def _do_login(self, page: Page):
-        log.info("Logging in via %s …", self.cfg.login_url)
+        logger.log(f"Logging in via {self.cfg.login_url}","info")
         await page.goto(self.cfg.login_url, wait_until="networkidle", timeout=20_000)
         if self.cfg.login_steps:
             for step in self.cfg.login_steps:
@@ -273,7 +235,7 @@ class UICrawler:
                     await el.click()
                 await asyncio.sleep(0.4)
         await page.wait_for_load_state("networkidle", timeout=15_000)
-        log.info("Login complete. Current URL: %s", page.url)
+        logger.log(f"Login complete. Current URL: {page.url}","info")
 
     def _make_node_id(self, page: Page) -> str:
         path = urlparse(page.url).path.strip("/").replace("/", "_") or "root"
