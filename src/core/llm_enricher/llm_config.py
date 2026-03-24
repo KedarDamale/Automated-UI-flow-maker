@@ -4,7 +4,7 @@ from src.config.Config import settings
 from src.config.Logger import logger
 
 llm = AzureOpenAI(
-    azure_endpoint=f"https://{settings.AZURE_OPENAI_ENDPOINT}",
+    azure_endpoint=f"{settings.AZURE_OPENAI_ENDPOINT}",
     api_key=settings.AZURE_OPENAI_API_KEY,
     api_version=settings.AZURE_OPENAI_API_VERSION,
 )

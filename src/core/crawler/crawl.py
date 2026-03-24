@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from src.config.Logger import logger
 from src.core.graph_builder.graph import GraphBuilder
 from src.config.Config import settings
-from src.core.page_action_extraction.extractor import ActionItem, extract_actions
+from src.core.page_action_extraction.extractor import ActionItem, extract_actions,extract_page_content
 from playwright.async_api import async_playwright, Browser, Page, Playwright
 from collections import deque
 from urllib.parse import urlparse
@@ -136,12 +136,15 @@ class UICrawler:
             shot_path = f"{self.settings.SCREENSHOT_DIR_PATH}/{node_id}.png"
             await page.screenshot(path=shot_path, full_page=False)
 
+        content = await extract_page_content(page)
+
         state = CrawlState(
             node_id=node_id,
             url=page.url,
             title=await page.title(),
             dom_hash=fp,
             screenshot_path=shot_path,
+            meta=content
         )
 
         self.graph.add_node(state, fingerprint=fp)

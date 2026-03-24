@@ -67,6 +67,12 @@ async def extract_actions(page: "Page", cfg: "CrawlerConfig") -> list[ActionItem
     return deduped
 
 
+async def extract_page_content(page: "Page"):
+    try:
+        return await page.evaluate(settings.PAGE_CONTENT_JS)
+    except Exception as e:
+        return {}
+
 
 
     

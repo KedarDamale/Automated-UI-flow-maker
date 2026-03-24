@@ -27,7 +27,12 @@ class GraphBuilder:
             "screenshot": state.screenshot_path,
             # placeholder for LLM-computed heuristics 
             "heuristics": {},
+            "headings":    state.meta.get("headings", []),
+            "buttons":     state.meta.get("buttons", []),
+            "links":       state.meta.get("links", []),
+            "form_labels": state.meta.get("formLabels", []),
         }
+        
         self._adjacency.setdefault(state.node_id, [])
         self._fp_to_id[fingerprint] = state.node_id
 
@@ -45,6 +50,7 @@ class GraphBuilder:
                 "selector": action.selector,
                 "tag": action.tag,
                 "href": action.href or None,
+                "interaction": _infer_interaction(action),
             },
         })
 
@@ -87,6 +93,24 @@ def _prettify(title: str) -> str:
             title = title.split(sep)[0].strip()
     return title[:80]
 
+def _infer_interaction(action: "ActionItem") -> str:
+    tag = action.tag.lower()
+    role = action.role.lower()
+    input_type = (action.input_type or "").lower()
+
+    if tag == "select" or input_type in ("checkbox", "radio"):
+        return "filter"
+    if role in ("tab",):
+        return "tab"
+    if role in ("menuitem", "menuitemcheckbox"):
+        return "menu"
+    if tag == "input":
+        return "type"
+    if tag == "a":
+        return "link"
+    if tag == "button" or role == "button":
+        return "button"
+    return "click"
 
 def _infer_type(url: str, meta: dict) -> str:
     url_lower = url.lower()

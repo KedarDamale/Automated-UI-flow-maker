@@ -15,15 +15,22 @@ class Config(BaseSettings):
     CHAR_LIMIT:int=100_000 * 4 # 400k tokens
     
     SYSTEM_PROMPT:str="""
-                        You are a UX analyst. Given a JSON description of a UI screen,
-                        return a JSON object with:
-                        - "name": a short, clear screen name (≤5 words, Title Case)
-                        - "tags": list of relevant tags from: auth, home, settings, checkout, search,
-                            help, onboarding, admin, form, list, detail, modal, error
-                        - "heuristics": object mapping task names to difficulty scores 1-10
-                        (10 = very hard to complete this task from this screen).
-                        Use only tasks provided in the prompt.
-                        Respond with ONLY valid JSON, no prose."""
+                        You are a UX analyst. Given a list of UI screen nodes, enrich each one.
+                        For each node return a JSON object keyed by node id with these fields:
+                        - "name": short screen name, 5 words max, Title Case
+                        - "summary": 2-3 sentences. Describe what this screen is, what the user can see, and what they can do here.
+                        - "user_intents": list of 3-6 natural language goals a user might have when landing on this screen.
+                        - "tags": list from: auth, home, settings, checkout, search, help, onboarding, admin, form, list, detail, modal, error, nav, landing, docs, media
+                        - "content_type": one of: form, article, listing, dashboard, landing, modal, nav, media, error
+                        - "complexity": number 1-5. How complex is this screen? 1=single action, 5=many sections and interactions.
+                        - "heuristics": object mapping each inferred user intent to a difficulty score 1-10.
+                        10 = very hard to complete from this screen, 1 = trivially easy.
+
+                        Rules:
+                        - user_intents must be specific to what this screen actually offers, not generic.
+                        - summary must mention concrete UI elements visible on the screen (forms, buttons, lists, etc).
+                        - Respond with ONLY valid JSON, no prose, no markdown fences.
+    """
 
     EXTRACT_JS:str="""() => {
     const SKIP_TAGS = new Set(['SCRIPT','STYLE','NOSCRIPT','SVG','HEAD']);
@@ -95,8 +102,8 @@ class Config(BaseSettings):
 }"""
     #crawl config
     CRAWL_URL: str="https://patgpt.globalspace.in/"
-    MAX_DEPTH: int=1
-    MAX_NODES: int=1
+    MAX_DEPTH: int=100
+    MAX_NODES: int=1000
     STAY_ON_ORIGIN: bool = True
 
     DUMMY_TEXT:str="kedardamale@gmail.com"
@@ -164,6 +171,39 @@ class Config(BaseSettings):
     SCREENSHOT_DIR_PATH: str | None = r"output/screenshots"
     PRETTY_PRINT: bool = True
 
+    PAGE_CONTENT_JS:str="""
+                        () => {
+                        // all visible text in main content area
+                        const mainEl = document.querySelector('main, [role="main"], article') || document.body;
+                        const fullText = mainEl.innerText?.trim().slice(0, 2000) || '';
+
+                        // all buttons and their labels
+                        const buttons = Array.from(document.querySelectorAll('button, [role="button"]'))
+                        .filter(e => e.innerText?.trim())
+                        .map(e => e.innerText.trim().slice(0, 50))
+                        .slice(0, 20);
+
+                        // all headings
+                        const headings = Array.from(document.querySelectorAll('h1,h2,h3'))
+                        .map(e => e.innerText.trim())
+                        .filter(Boolean)
+                        .slice(0, 10);
+
+                        // all form labels
+                        const formLabels = Array.from(document.querySelectorAll('label, input[placeholder]'))
+                        .map(e => e.innerText?.trim() || e.getAttribute('placeholder') || '')
+                        .filter(Boolean)
+                        .slice(0, 15);
+
+                        // all visible links text
+                        const links = Array.from(document.querySelectorAll('a[href]'))
+                        .filter(e => e.innerText?.trim())
+                        .map(e => e.innerText.trim().slice(0, 50))
+                        .slice(0, 20);
+
+                        return { fullText, buttons, headings, formLabels, links };
+                        }
+                        """
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
