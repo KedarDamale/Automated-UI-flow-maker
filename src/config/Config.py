@@ -101,9 +101,9 @@ class Config(BaseSettings):
     return results;
 }"""
     #crawl config
-    CRAWL_URL: str="https://patgpt.globalspace.in/"
-    MAX_DEPTH: int=100
-    MAX_NODES: int=1000
+    CRAWL_URL: str="https://patgpt.globalspace.in"
+    MAX_DEPTH: int=1000000000
+    MAX_NODES: int=1000000000
     STAY_ON_ORIGIN: bool = True
 
     DUMMY_TEXT:str="kedardamale@gmail.com"
